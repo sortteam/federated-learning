@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@tensorflow/tfjs": "~0.12",
+    "@tensorflow/tfjs": "~1.2.7",
     "@tensorflow/tfjs-converter": "^0.5.2",
     "federated-learning-client": "link:../../../src/client"
   },
