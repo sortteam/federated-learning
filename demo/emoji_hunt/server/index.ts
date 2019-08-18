@@ -26,7 +26,7 @@ import * as http from 'http';
 import {resolve} from 'path';
 
 import {setupModel} from './model';
-import {verify} from './verify';
+//import {verify} from './verify';
 
 const modelDir = resolve(__dirname + '/modelData');
 const fileDir = resolve(__dirname + '/trainingData');
@@ -47,20 +47,20 @@ app.use(cookieParser());
 console.log(process.env.USE_OAUTH);
 
 // tslint:disable-next-line:no-any
-if (process.env.USE_OAUTH && (process.env.USE_OAUTH as any) !== false) {
-  app.use(async (req, res, next) => {
-    try {
-      const token = req.cookies['oauth2token'];
-      const userid = await verify(token);
-      // tslint:disable-next-line:no-any
-      (req as any).googleUserID = userid;
-      next();
-    } catch (exn) {
-      console.log('unauthorized connection: ', exn.message);
-      res.status(403).send({err: exn.message}).end();
-    }
-  });
-}
+// if (process.env.USE_OAUTH && (process.env.USE_OAUTH as any) !== false) {
+//   app.use(async (req, res, next) => {
+//     try {
+//       const token = req.cookies['oauth2token'];
+//       const userid = await verify(token);
+//       // tslint:disable-next-line:no-any
+//       (req as any).googleUserID = userid;
+//       next();
+//     } catch (exn) {
+//       console.log('unauthorized connection: ', exn.message);
+//       res.status(403).send({err: exn.message}).end();
+//     }
+//   });
+// }
 
 app.use(fileUpload());
 
@@ -71,6 +71,7 @@ app.use((req, res, next) => {
 });
 
 app.post('/data', (req, res) => {
+  console.log('test');
   if (req.files == null) {
     return res.status(400).send('Must upload a file');
   }

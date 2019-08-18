@@ -25,6 +25,7 @@ const modelVersionElt = sel`#modelversion`
 const statusElt = sel`#status`
 const findMeElt = sel`#findme`
 const overrideButtonElt = sel`#override`
+const uploadAllowedElt = sel`#uploaddata`
 
 let webcamSetup = false;
 
@@ -38,6 +39,10 @@ export function status(str) {
 
 export function findMe(str) {
   findMeElt.innerText = str;
+}
+
+export function uploadAllowed() {
+  return uploadAllowedElt.checked;
 }
 
 export async function webcam() {

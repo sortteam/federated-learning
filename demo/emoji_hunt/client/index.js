@@ -26,11 +26,12 @@ import * as ui from './ui.js';
 let findMeElt = document.getElementById('findme')
 
 const SERVER_URL = `http://ec2-13-125-131-64.ap-northeast-2.compute.amazonaws.com:3000`;
+const UPLOAD_URL = `http://ec2-13-125-131-64.ap-northeast-2.compute.amazonaws.com:3000/data`;
 const USE_OAUTH = false;
 
 console.log('server url:', SERVER_URL)
 
-const MODEL_INPUT_WIDTH = 224;
+const MODEL_INPUT_WIDTH = 28;
 const NUM_LABELS = 10;
 
 const LEARNING_RATE = 0.1;
@@ -107,7 +108,7 @@ function preprocess(webcam) {
     const cropped = squareCrop(frame).toFloat();
     const scaled =
         tf.image.resizeBilinear(cropped, [MODEL_INPUT_WIDTH, MODEL_INPUT_WIDTH]);
-    const prepped = scaled.sub(255 / 2).div(255 / 2).expandDims(0);
+    const prepped = scaled.sub(255 / 2).div(255 / 2).mean(2).expandDims(0).expandDims(-1);
     return prepped;
   });
 }
@@ -193,6 +194,11 @@ async function main() {
 
       try {
         await client.federatedUpdate(input, label);
+
+        if (ui.uploadAllowed()) {
+          upload(UPLOAD_URL, lookingFor.targetIdx, webcam)
+              .catch(err => ui.status(err));
+        }
 
       } catch (err) {
         ui.status(err);
