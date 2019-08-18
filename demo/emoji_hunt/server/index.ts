@@ -23,7 +23,6 @@ import * as fileUpload from 'express-fileupload';
 import * as federated from 'federated-learning-server';
 import * as fs from 'fs';
 import * as http from 'http';
-import * as https from 'https';
 import {resolve} from 'path';
 
 import {setupModel} from './model';
