@@ -38,18 +38,8 @@ mkdir(fileDir);
 const app = express();
 
 let port: number;
-let httpServer: http.Server|https.Server;
-if (process.env.SSL_KEY && process.env.SSL_CERT) {
-  const httpsOptions = {
-    key: fs.readFileSync(process.env.SSL_KEY),
-    cert: fs.readFileSync(process.env.SSL_CERT)
-  };
-  httpServer = https.createServer(httpsOptions, app);
-  port = parseInt(process.env.PORT, 10) || 443;
-} else {
-  httpServer = http.createServer(app);
-  port = parseInt(process.env.PORT, 10) || 3000;
-}
+let httpServer = http.createServer(app);
+port = parseInt(process.env.PORT, 10) || 3000;
 
 app.use(express.static(resolve(`${__dirname}/../client/dist`)));
 
