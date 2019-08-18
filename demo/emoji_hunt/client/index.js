@@ -16,34 +16,30 @@
  */
 
 import * as tf from '@tensorflow/tfjs';
-import {loadFrozenModel} from '@tensorflow/tfjs-converter'
 import * as federated from 'federated-learning-client';
 
-import {SCAVENGER_HUNT_LABELS} from './labels.js';
-import {EMOJIS_LVL_1} from './levels.js';
+import {MNIST_LABELS} from './labels.js';
+import {MNIST} from './levels.js';
 import {upload} from './training_data_upload.js';
 import * as ui from './ui.js';
 
-const MODEL_URL =
-    'https://storage.googleapis.com/learnjs-data/emoji_scavenger_hunt/web_model.pb';
-const WEIGHT_MANIFEST =
-    'https://storage.googleapis.com/learnjs-data/emoji_scavenger_hunt/weights_manifest.json';
+let findMeElt = document.getElementById('findme')
 
-const SERVER_URL = `//${location.hostname}:3000`;
-const UPLOAD_URL = `//${location.hostname}:3000/data`;
+const SERVER_URL = `http://ec2-13-125-131-64.ap-northeast-2.compute.amazonaws.com:3000`;
 const USE_OAUTH = false;
 
 console.log('server url:', SERVER_URL)
 
 const MODEL_INPUT_WIDTH = 224;
-const NUM_LABELS = 424;
+const NUM_LABELS = 10;
 
 const LEARNING_RATE = 0.1;
 
 // Load the model & set it up for training
 async function setupModel() {
-  const model = await loadFrozenModel(MODEL_URL, WEIGHT_MANIFEST);
+  const model = await tf.loadGraphModel('https://ywj-horovod.s3.ap-northeast-2.amazonaws.com/model/model.json');
   const weights = model.weights;
+  console.log(model);
 
   // TODO: there must be a better way
   const nonTrainables = /(batchnorm)|(reshape)/g;
@@ -68,7 +64,7 @@ async function setupModel() {
   // TODO: better to not run softmax and use softmaxCrossEntropy?
   const loss = (y, label) => tf.losses.logLoss(y, label)
 
-  const inputShape = [MODEL_INPUT_WIDTH, MODEL_INPUT_WIDTH, 3];
+  const inputShape = [MODEL_INPUT_WIDTH, MODEL_INPUT_WIDTH, 1];
   const outputShape = [NUM_LABELS];
 
   const varsAndLoss = new federated.FederatedDynamicModel({
@@ -86,7 +82,7 @@ async function getTopPred(preds) {
   const data = await idx.data();
   tf.dispose(idx);
   const top = data[0];
-  return {index: top, label: SCAVENGER_HUNT_LABELS[top]};
+  return {index: top, label: MNIST_LABELS[top]};
 }
 
 // center-crop input Tensor3D into a square
@@ -107,7 +103,7 @@ function squareCrop(frame) {
 
 function preprocess(webcam) {
   return tf.tidy(() => {
-    const frame = tf.fromPixels(webcam);
+    const frame = tf.browser.fromPixels(webcam);
     const cropped = squareCrop(frame).toFloat();
     const scaled =
         tf.image.resizeBilinear(cropped, [MODEL_INPUT_WIDTH, MODEL_INPUT_WIDTH]);
@@ -147,6 +143,7 @@ async function main() {
   await client.setup();
 
   let isTraining = false;
+  let lookingFor = null;
 
   ui.overrideButton(evt => {
     if (isTraining) {
@@ -156,23 +153,33 @@ async function main() {
     isTraining = true;
   });
 
+  ui.findMeButton(evt => {
+    if (lookingFor === null){
+      return
+    }
+    lookingFor = findMeElt.options[findMeElt.selectedIndex];
+  });
+
   ui.status('ready!');
 
   const numLabels =
-      Object.keys(SCAVENGER_HUNT_LABELS).reduce((x, y) => Math.max(x, y)) + 1;
+      Object.keys(MNIST_LABELS).reduce((x, y) => Math.max(x, y)) + 1;
 
-  const pickTarget = () => {
-    const idx = Math.floor(EMOJIS_LVL_1.length * Math.random());
-    const {name, emoji, path} = EMOJIS_LVL_1[idx];
-    const [targetIdx, _] =
-        Object.entries(SCAVENGER_HUNT_LABELS).filter(([idx,
-                                                       val]) => val == name)[0];
-    return {name, emoji, path, targetIdx: parseInt(targetIdx)};
+  const createTarget = () => {
+    let targets = [];
+    for (let idx = 0; idx < MNIST.length; idx++) {
+        const {name, emoji, path} = MNIST[idx];
+        targets.push({name, emoji, path, targetIdx: parseInt(emoji)});
+        if (idx == 0){
+            lookingFor = {name, emoji, path, targetIdx: parseInt(emoji)};
+        }
+    }
+    return targets;
   };
 
-  let lookingFor = pickTarget();
-
-  ui.findMe(`find me a ${lookingFor.name}, ${lookingFor.emoji}`);
+  const targets = createTarget();
+  console.log(targets)
+  ui.createfindMe(targets);
 
   while (true) {
     await tf.nextFrame();
@@ -187,11 +194,6 @@ async function main() {
       try {
         await client.federatedUpdate(input, label);
 
-        if (ui.uploadAllowed()) {
-          upload(UPLOAD_URL, lookingFor.targetIdx, webcam)
-              .catch(err => ui.status(err));
-        }
-
       } catch (err) {
         ui.status(err);
       }
@@ -200,8 +202,6 @@ async function main() {
 
       isTraining = false;
 
-      lookingFor = pickTarget();
-      ui.findMe(`find me a ${lookingFor.name}, ${lookingFor.emoji}`)
     };
 
     const preds = tf.tidy(() => {
@@ -218,8 +218,6 @@ async function main() {
       for (let i = 0; i < 30; i++) {
         await tf.nextFrame();
       }
-      lookingFor = pickTarget();
-      ui.findMe(`find me a ${lookingFor.name}, ${lookingFor.emoji}`)
     }
   }
 }
