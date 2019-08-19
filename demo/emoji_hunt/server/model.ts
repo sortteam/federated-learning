@@ -20,7 +20,7 @@ import * as federated from 'federated-learning-server';
 const LEARNING_RATE = 0.01;
 
 const MODEL_INPUT_WIDTH = 224;
-const NUM_LABELS = 10;
+const NUM_LABELS = 3;
 // Load the model & set it up for training
 export async function setupModel(saveDir: string):
     Promise<federated.FederatedServerModel> {
@@ -55,7 +55,7 @@ export async function setupModel(saveDir: string):
     return tf.losses.logLoss(label, preds) as tf.Scalar;
   };
 
-  const inputShape = [MODEL_INPUT_WIDTH, MODEL_INPUT_WIDTH, 1];
+  const inputShape = [MODEL_INPUT_WIDTH, MODEL_INPUT_WIDTH, 3];
   const outputShape = [NUM_LABELS];
   const varsAndLoss = new federated.FederatedServerDynamicModel(
       {vars, saveDir, predict, loss, optimizer, inputShape, outputShape});

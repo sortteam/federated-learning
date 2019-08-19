@@ -31,8 +31,8 @@ const USE_OAUTH = false;
 
 console.log('server url:', SERVER_URL)
 
-const MODEL_INPUT_WIDTH = 28;
-const NUM_LABELS = 10;
+const MODEL_INPUT_WIDTH = 224;
+const NUM_LABELS = 3;
 
 const LEARNING_RATE = 0.1;
 
@@ -65,7 +65,7 @@ async function setupModel() {
   // TODO: better to not run softmax and use softmaxCrossEntropy?
   const loss = (y, label) => tf.losses.logLoss(y, label)
 
-  const inputShape = [MODEL_INPUT_WIDTH, MODEL_INPUT_WIDTH, 1];
+  const inputShape = [MODEL_INPUT_WIDTH, MODEL_INPUT_WIDTH, 3];
   const outputShape = [NUM_LABELS];
 
   const varsAndLoss = new federated.FederatedDynamicModel({
@@ -108,7 +108,7 @@ function preprocess(webcam) {
     const cropped = squareCrop(frame).toFloat();
     const scaled =
         tf.image.resizeBilinear(cropped, [MODEL_INPUT_WIDTH, MODEL_INPUT_WIDTH]);
-    const prepped = scaled.sub(255 / 2).div(255 / 2).mean(2).expandDims(0).expandDims(-1);
+    const prepped = scaled.sub(255 / 2).div(255 / 2).expandDims(0);
     return prepped;
   });
 }
