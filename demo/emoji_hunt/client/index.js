@@ -179,7 +179,6 @@ async function main() {
   };
 
   const targets = createTarget();
-  console.log(targets)
   ui.createfindMe(targets);
 
   while (true) {
@@ -215,6 +214,7 @@ async function main() {
     });
 
     const {label} = await getTopPred(preds);
+    console.log(preds.data());
 
     tf.dispose(preds);
 

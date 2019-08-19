@@ -24,7 +24,7 @@ const NUM_LABELS = 3;
 // Load the model & set it up for training
 export async function setupModel(saveDir: string):
     Promise<federated.FederatedServerModel> {
-  const model = await tf.loadGraphModel('https://ywj-horovod.s3.ap-northeast-2.amazonaws.com/model/model.json');
+  const model = await tf.loadGraphModel('https://ywj-horovod.s3.ap-northeast-2.amazonaws.com/model/old/model.json');
   const weights = model.weights;
 
   // TODO: there must be a better way

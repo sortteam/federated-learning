@@ -17,55 +17,20 @@
 
 export const MNIST = [
   {
-    'name': '0',
-    'emoji': '0',
-    'path': '/img/emojis/game/0.svg'
+    'name': 'paper',
+    'emoji': '✋',
+    'path': '/img/emojis/game/paper.svg'
   },
   {
-    'name': '1',
-    'emoji': '1',
-    'path': '/img/emojis/game/1.svg'
+    'name': 'rock',
+    'emoji': '✊',
+    'path': '/img/emojis/game/rock.svg'
   },
   {
-    'name': '2',
-    'emoji': '2',
-    'path': '/img/emojis/game/2.svg'
-  },
-  {
-    'name': '3',
-    'emoji': '3',
-    'path': '/img/emojis/game/3.svg'
-  },
-  {
-    'name': '4',
-    'emoji': '4',
-    'path': '/img/emojis/game/4.svg'
-  },
-  {
-    'name': '5',
-    'emoji': '5',
-    'path': '/img/emojis/game/5.svg'
-  },
-  {
-    'name': '6',
-    'emoji': '6',
-    'path': '/img/emojis/game/6.svg'
-  },
-  {
-    'name': '7',
-    'emoji': '7',
-    'path': '/img/emojis/game/7.svg'
-  },
-  {
-    'name': '8',
-    'emoji': '8',
-    'path': '/img/emojis/game/8.svg'
-  },
-  {
-    'name': '9',
-    'emoji': '9',
-    'path': '/img/emojis/game/9.svg'
-  },
+    'name': 'scissors',
+    'emoji': '✌',
+    'path': '/img/emojis/game/scissors.svg'
+  }
 ]
 
 export const EMOJIS_LVL_1 = [
