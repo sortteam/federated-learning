@@ -25,7 +25,6 @@ const modelVersionElt = sel`#modelversion`
 const statusElt = sel`#status`
 const findMeElt = sel`#findme`
 const overrideButtonElt = sel`#override`
-const uploadAllowedElt = sel`#uploaddata`
 
 let webcamSetup = false;
 
@@ -41,10 +40,6 @@ export function findMe(str) {
   findMeElt.innerText = str;
 }
 
-export function uploadAllowed() {
-  return uploadAllowedElt.checked;
-}
-
 export async function webcam() {
   const video = sel`#webcamvideo`;
 
@@ -53,10 +48,10 @@ export async function webcam() {
   }
   try {
     const stream =
-      await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {facingMode: 'environment'}
-      });
+        await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {facingMode: 'environment'}
+        });
 
     video.srcObject = stream;
 
@@ -77,8 +72,28 @@ export async function webcam() {
   return video;
 }
 
+export function createfindMe(emojis){
+  for (let idx = 0; idx < emojis.length; idx++) {
+    let opt = document.createElement('option');
+    opt.value = idx;
+    opt.name = emojis[idx].name;
+    opt.emoji = emojis[idx].emoji;
+    opt.path = emojis[idx].path;
+    opt.targetIdx = emojis[idx].targetIdx;
+    opt.innerHTML = emojis[idx].emoji;
+    findMeElt.appendChild(opt);
+    if (idx == 0) {
+      opt.selectedIndex = 0;
+    }
+  }
+}
+
 export function overrideButton(handler) {
   return overrideButtonElt.addEventListener('click', handler);
+}
+
+export function findMeButton(handler) {
+  return findMeElt.addEventListener('change', handler);
 }
 
 export async function login() {

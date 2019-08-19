@@ -29,7 +29,7 @@ const MODEL_URL =
 const WEIGHT_MANIFEST =
     'https://storage.googleapis.com/learnjs-data/emoji_scavenger_hunt/weights_manifest.json';
 
-const SERVER_URL = `//${location.hostname}:3000`;
+const SERVER_URL = `http://ec2-13-125-131-64.ap-northeast-2.compute.amazonaws.com:3000`;
 const UPLOAD_URL = `//${location.hostname}:3000/data`;
 const USE_OAUTH = false;
 
@@ -147,6 +147,7 @@ async function main() {
   await client.setup();
 
   let isTraining = false;
+  let lookingFor = null;
 
   ui.overrideButton(evt => {
     if (isTraining) {
@@ -156,72 +157,73 @@ async function main() {
     isTraining = true;
   });
 
+  ui.findMeButton(evt => {
+      if (lookingFor === null){
+        return
+      }
+      lookingFor = findMeElt.options[findMeElt.selectedIndex];
+    });
+
   ui.status('ready!');
 
   const numLabels =
       Object.keys(SCAVENGER_HUNT_LABELS).reduce((x, y) => Math.max(x, y)) + 1;
 
-  const pickTarget = () => {
-    const idx = Math.floor(EMOJIS_LVL_1.length * Math.random());
-    const {name, emoji, path} = EMOJIS_LVL_1[idx];
-    const [targetIdx, _] =
-        Object.entries(SCAVENGER_HUNT_LABELS).filter(([idx,
-                                                       val]) => val == name)[0];
-    return {name, emoji, path, targetIdx: parseInt(targetIdx)};
-  };
-
-  let lookingFor = pickTarget();
-
-  ui.findMe(`find me a ${lookingFor.name}, ${lookingFor.emoji}`);
-
-  while (true) {
-    await tf.nextFrame();
-
-    if (isTraining) {
-      const [input, label] = tf.tidy(() => {
-        const input = preprocess(webcam);
-        const label = tf.oneHot([lookingFor.targetIdx], numLabels).toFloat();
-        return [input, label];
-      });
-
-      try {
-        await client.federatedUpdate(input, label);
-
-        if (ui.uploadAllowed()) {
-          upload(UPLOAD_URL, lookingFor.targetIdx, webcam)
-              .catch(err => ui.status(err));
-        }
-
-      } catch (err) {
-        ui.status(err);
+  const createTarget = () => {
+      let targets = [];
+      for (let idx = 0; idx < EMOJIS_LVL_1.length; idx++) {
+          const {name, emoji, path} = EMOJIS_LVL_1[idx];
+          targets.push({name, emoji, path, targetIdx: parseInt(emoji)});
+          if (idx == 0){
+              lookingFor = {name, emoji, path, targetIdx: parseInt(emoji)};
+          }
       }
-
-      tf.dispose([input, label]);
-
-      isTraining = false;
-
-      lookingFor = pickTarget();
-      ui.findMe(`find me a ${lookingFor.name}, ${lookingFor.emoji}`)
+      return targets;
     };
 
-    const preds = tf.tidy(() => {
-      return client.predict(preprocess(webcam));
-    });
+  const targets = createTarget();
+    console.log(targets)
+    ui.createfindMe(targets);
 
-    const {label} = await getTopPred(preds);
+    while (true) {
+      await tf.nextFrame();
 
-    tf.dispose(preds);
+      if (isTraining) {
+        const [input, label] = tf.tidy(() => {
+          const input = preprocess(webcam);
+          const label = tf.oneHot([lookingFor.targetIdx], numLabels).toFloat();
+          return [input, label];
+        });
 
-    ui.status(`i see a ${label}...`);
-    if (label === lookingFor.name) {
-      ui.status(`congrats! u did it !`);
-      for (let i = 0; i < 30; i++) {
-        await tf.nextFrame();
+        try {
+          await client.federatedUpdate(input, label);
+
+        } catch (err) {
+          ui.status(err);
+        }
+
+        tf.dispose([input, label]);
+
+        isTraining = false;
+
+      };
+
+      const preds = tf.tidy(() => {
+        return client.predict(preprocess(webcam));
+      });
+
+      const {label} = await getTopPred(preds);
+
+      tf.dispose(preds);
+
+      ui.status(`i see a ${label}...`);
+      if (label === lookingFor.name) {
+        ui.status(`congrats! u did it !`);
+        for (let i = 0; i < 30; i++) {
+          await tf.nextFrame();
+        }
       }
-      lookingFor = pickTarget();
-      ui.findMe(`find me a ${lookingFor.name}, ${lookingFor.emoji}`)
     }
   }
-}
 
-main();
+  main();
