@@ -194,10 +194,12 @@ async function main() {
       try {
         await client.federatedUpdate(input, label);
 
+/*
         if (ui.uploadAllowed()) {
           upload(UPLOAD_URL, lookingFor.targetIdx, webcam)
               .catch(err => ui.status(err));
         }
+*/
 
       } catch (err) {
         ui.status(err);
