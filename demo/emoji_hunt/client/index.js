@@ -25,18 +25,18 @@ import {upload} from './training_data_upload.js';
 import * as ui from './ui.js';
 
 const MODEL_URL =
-    'https://storage.googleapis.com/learnjs-data/emoji_scavenger_hunt/web_model.pb';
+    'https://ywj-horovod.s3.ap-northeast-2.amazonaws.com/test/tensorflowjs_model.pb';
 const WEIGHT_MANIFEST =
-    'https://storage.googleapis.com/learnjs-data/emoji_scavenger_hunt/weights_manifest.json';
+    'https://ywj-horovod.s3.ap-northeast-2.amazonaws.com/test/weights_manifest.json';
 
-const SERVER_URL = `//${location.hostname}:3000`;
-const UPLOAD_URL = `//${location.hostname}:3000/data`;
+const SERVER_URL = `http://ec2-13-125-131-64.ap-northeast-2.compute.amazonaws.com:3000`;
+const UPLOAD_URL = `http://ec2-13-125-131-64.ap-northeast-2.compute.amazonaws.com:3000/data`;
 const USE_OAUTH = false;
 
 console.log('server url:', SERVER_URL)
 
 const MODEL_INPUT_WIDTH = 224;
-const NUM_LABELS = 424;
+const NUM_LABELS = 3;
 
 const LEARNING_RATE = 0.1;
 
@@ -85,8 +85,11 @@ async function getTopPred(preds) {
   const idx = preds.argMax(1);
   const data = await idx.data();
   tf.dispose(idx);
+  const yPred = preds.dataSync();
+
   const top = data[0];
-  return {index: top, label: SCAVENGER_HUNT_LABELS[top]};
+  return {index: top, label: SCAVENGER_HUNT_LABELS[top],
+        a: yPred[0].toFixed(3), b: yPred[1].toFixed(3), c: yPred[2].toFixed(3)};
 }
 
 // center-crop input Tensor3D into a square
@@ -107,10 +110,10 @@ function squareCrop(frame) {
 
 function preprocess(webcam) {
   return tf.tidy(() => {
-    const frame = tf.fromPixels(webcam);
-    const cropped = squareCrop(frame).toFloat();
+    const frame = tf.fromPixels(webcam).toFloat();
+    // const cropped = squareCrop(frame).toFloat();
     const scaled =
-        tf.image.resizeBilinear(cropped, [MODEL_INPUT_WIDTH, MODEL_INPUT_WIDTH]);
+        tf.image.resizeBilinear(frame, [MODEL_INPUT_WIDTH, MODEL_INPUT_WIDTH]);
     const prepped = scaled.sub(255 / 2).div(255 / 2).expandDims(0);
     return prepped;
   });
@@ -187,10 +190,7 @@ async function main() {
       try {
         await client.federatedUpdate(input, label);
 
-        if (ui.uploadAllowed()) {
-          upload(UPLOAD_URL, lookingFor.targetIdx, webcam)
-              .catch(err => ui.status(err));
-        }
+
 
       } catch (err) {
         ui.status(err);
@@ -208,11 +208,11 @@ async function main() {
       return client.predict(preprocess(webcam));
     });
 
-    const {label} = await getTopPred(preds);
+    const {label, a, b, c} = await getTopPred(preds);
 
     tf.dispose(preds);
 
-    ui.status(`i see a ${label}...`);
+    ui.status(`✋${a}, ✊${b}, ✌${c}`);
     if (label === lookingFor.name) {
       ui.status(`congrats! u did it !`);
       for (let i = 0; i < 30; i++) {

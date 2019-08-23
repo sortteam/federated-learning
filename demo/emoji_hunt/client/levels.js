@@ -17,64 +17,19 @@
 
 export const EMOJIS_LVL_1 = [
   {
-    'name': 'hand',
+    'name': 'paper',
     'emoji': '✋',
-    'path': '/img/emojis/game/hand.svg'
+    'path': '/img/emojis/game/paper.svg'
   },
   {
-    'name': 'mouse',
-    'emoji': '🖱',
-    'path': '/img/emojis/game/mouse.svg'
+    'name': 'rock',
+    'emoji': '✊',
+    'path': '/img/emojis/game/rock.svg'
   },
   {
-    'name': 'plug',
-    'emoji': '🔌',
-    'path': '/img/emojis/game/plug.svg'
-  },
-  {
-    'name': 'light bulb',
-    'emoji': '💡',
-    'path': '/img/emojis/game/light bulb.svg'
-  },
-  {
-    'name': 'book',
-    'emoji': '📚',
-    'path': '/img/emojis/game/book.svg'
-  },
-  {
-    'name': 'cellphone',
-    'emoji': '📱',
-    'path': '/img/emojis/game/cellphone.svg'
-  },
-  {
-    'name': 'keyboard',
-    'emoji': '⌨️',
-    'path': '/img/emojis/game/keyboard.svg'
-  },
-  {
-    'name': 'tv',
-    'emoji': '📺',
-    'path': '/img/emojis/game/tv.svg'
-  },
-  {
-    'name': 'laptop',
-    'emoji': '💻',
-    'path': '/img/emojis/game/laptop.svg'
-  },
-  {
-    'name': 'shirt',
-    'emoji': '👕',
-    'path': '/img/emojis/game/shirt.svg'
-  },
-  {
-    'name': 'pants',
-    'emoji': '👖',
-    'path': '/img/emojis/game/pants.svg'
-  },
-  {
-    'name': 'shoe',
-    'emoji': '👞',
-    'path': '/img/emojis/game/shoe.svg'
+    'name': 'scissors',
+    'emoji': '✌',
+    'path': '/img/emojis/game/scissors.svg'
   }
 ];
 

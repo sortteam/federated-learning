@@ -23,7 +23,6 @@ import * as fileUpload from 'express-fileupload';
 import * as federated from 'federated-learning-server';
 import * as fs from 'fs';
 import * as http from 'http';
-import * as https from 'https';
 import {resolve} from 'path';
 
 import {setupModel} from './model';
@@ -38,18 +37,8 @@ mkdir(fileDir);
 const app = express();
 
 let port: number;
-let httpServer: http.Server|https.Server;
-if (process.env.SSL_KEY && process.env.SSL_CERT) {
-  const httpsOptions = {
-    key: fs.readFileSync(process.env.SSL_KEY),
-    cert: fs.readFileSync(process.env.SSL_CERT)
-  };
-  httpServer = https.createServer(httpsOptions, app);
-  port = parseInt(process.env.PORT, 10) || 443;
-} else {
-  httpServer = http.createServer(app);
-  port = parseInt(process.env.PORT, 10) || 3000;
-}
+let httpServer = http.createServer(app);
+port = parseInt(process.env.PORT, 10) || 3000;
 
 app.use(express.static(resolve(`${__dirname}/../client/dist`)));
 
@@ -60,7 +49,7 @@ console.log(process.env.USE_OAUTH);
 // tslint:disable-next-line:no-any
 if (process.env.USE_OAUTH && (process.env.USE_OAUTH as any) !== false) {
   app.use(async (req, res, next) => {
-    try {
+    try
       const token = req.cookies['oauth2token'];
       const userid = await verify(token);
       // tslint:disable-next-line:no-any
@@ -96,8 +85,8 @@ setupModel(modelDir)
     .then((model) => {
       const federatedServer = new federated.Server(httpServer, model, {
         clientHyperparams:
-            {learningRate: 3e-4, batchSize: 1, examplesPerUpdate: 1},
-        serverHyperparams: {minUpdatesPerVersion: 5},
+            {epochs: 1, learningRate: 3e-4, batchSize: 1, examplesPerUpdate: 1},
+        serverHyperparams: {minUpdatesPerVersion: 1},
         modelDir
       });
       return federatedServer.setup().then(() => {

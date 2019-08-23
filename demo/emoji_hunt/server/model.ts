@@ -21,14 +21,13 @@ import * as federated from 'federated-learning-server';
 
 // tslint:disable:max-line-length
 const MODEL_URL =
-    'https://storage.googleapis.com/learnjs-data/emoji_scavenger_hunt/web_model.pb';
+    'https://ywj-horovod.s3.ap-northeast-2.amazonaws.com/test/tensorflowjs_model.pb';
 const WEIGHT_MANIFEST =
-    'https://storage.googleapis.com/learnjs-data/emoji_scavenger_hunt/weights_manifest.json';
-
-const LEARNING_RATE = 0.01;
+    'https://ywj-horovod.s3.ap-northeast-2.amazonaws.com/test/weights_manifest.json';
+const LEARNING_RATE = 0.0001;
 
 const MODEL_INPUT_WIDTH = 224;
-const NUM_LABELS = 424;
+const NUM_LABELS = 3;
 // Load the model & set it up for training
 export async function setupModel(saveDir: string):
     Promise<federated.FederatedServerModel> {
